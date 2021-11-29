@@ -176,15 +176,6 @@ docker-compose up -d database
 PGHOST=localhost PGUSER=root PGPASSWORD=password PGDATABASE=postgres bash test/setup_db.sh
 ```
 
-`dbt-core` uses test credentials specified in a `test.env` file in the root of the repository for non-Postgres databases. This `test.env` file is git-ignored, but please be _extra_ careful to never check in credentials or other sensitive information when developing against `dbt-core`. To create your `test.env` file, copy the provided sample file, then supply your relevant credentials. This step is only required to use non-Postgres databases.
-
-```
-cp test.env.sample test.env
-$EDITOR test.env
-```
-
-> In general, it's most important to have successful unit and Postgres tests. Once you open a PR, `dbt-core` will automatically run integration tests for the other three core database adapters. Of course, if you are a BigQuery user, contributing a BigQuery-only feature, it's important to run BigQuery tests as well.
-
 ### Test commands
 
 There are a few methods for running tests locally.
