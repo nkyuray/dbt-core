@@ -52,7 +52,7 @@ In some cases, the right resolution to an open issue might be tangential to the 
 
 ### Using issue labels
 
-The `dbt-core` maintainers use labels to categorize open issues. Some labels indicate the databases impacted by the issue, while others describe the domain in the `dbt-core` codebase germane to the discussion. While most of these labels are self-explanatory (eg. `snowflake` or `bigquery`), there are others that are worth describing.
+The `dbt-core` maintainers use labels to categorize open issues. Most labels describe the domain in the `dbt-core` codebase germane to the discussion.
 
 | tag | description |
 | --- | ----------- |
@@ -225,6 +225,6 @@ dbt Labs provides a CI environment to test changes to specific adapters, and per
 
 A `dbt-core` maintainer will review your PR. They may suggest code revision for style or clarity, or request that you add unit or integration test(s). These are good things! We believe that, with a little bit of help, anyone can contribute high-quality code.
 - First time contributors should note code checks + unit tests require a maintainer to approve.
-- A maintainer will need to add the `ok to test` label, at which point your subsequent commits will trigger integration tests in BigQuery.
+
 
 Once all tests are passing and your PR has been approved, a `dbt-core` maintainer will merge your changes into the active development branch. And that's it! Happy developing :tada:
