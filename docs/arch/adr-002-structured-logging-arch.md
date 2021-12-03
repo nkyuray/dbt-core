@@ -23,10 +23,12 @@ We decided to go with a custom nominal type layer even though this was going to 
 Using mypy to enforce these assumptions is a step better than testing becacuse we do not need to write tests to run through every branch of dbt that it could take. Because it is checked statically on every file, mypy will give us these guarantees as long as it is configured to run everywhere.
 
 #### How to output the data
-We decided to use the std lib logger because it was far more difficult than we expected to get to work properly. Documentation was lacking, and reading the source code wasn't a quick way to learn. The std lib logger was used mostly out of a necessity, and because many of the pleasantries you get from using a log library we had already chosen to do explicitly with functions in our nominal typing layer. Swapping out the std lib logger in the future should be an easy task should we choose to do it.
+We decided to use the std lib logger because it was far more difficult than we expected to get to structlog to work properly. Documentation was lacking, and reading the source code wasn't a quick way to learn. The std lib logger was used mostly out of a necessity, and because many of the pleasantries you get from using a log library we had already chosen to do explicitly with functions in our nominal typing layer. Swapping out the std lib logger in the future should be an easy task should we choose to do it.
 
 ## Status
 Completed
 
 ## Consequences 
-Adding a new log event is more cumbersome than it was previously. Instead of writing the message at the log callsite, you must create a new concrete class in the event types. This is more opaque for new contributors. All user-facing log messages now live in one file which makes the job of conforming them much simpler. Because they are all nominally typed separately, it opens up the possibility to have log documentation generated from the type hints as well as outputting our logs in multiple human languages if we want to translate our messages.
+Adding a new log event is more cumbersome than it was previously: instead of writing the message at the log callsite, you must create a new concrete class in the event types. This is more opaque for new contributors. The json serialization approach we are using via `asdict` is fragile and unoptimized and should be replaced.
+
+All user-facing log messages now live in one file which makes the job of conforming them much simpler. Because they are all nominally typed separately, it opens up the possibility to have log documentation generated from the type hints as well as outputting our logs in multiple human languages if we want to translate our messages.
