@@ -149,7 +149,6 @@ pip install -r dev-requirements.txt -r editable-requirements.txt
 
 When `dbt-core` is installed this way, any changes you make to the `dbt-core` source code will be reflected immediately in your next `dbt-core` run.
 
-To confirm you have correct version of dbt installed please run `dbt --version` and `which dbt`
 
 ### Running `dbt-core`
 
