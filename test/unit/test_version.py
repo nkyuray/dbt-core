@@ -3,6 +3,7 @@ from unittest.mock import patch, MagicMock
 
 import dbt.main
 import dbt.version
+from dbt.ui import green, red
 
 
 class VersionTest(unittest.TestCase):
@@ -15,10 +16,10 @@ class VersionTest(unittest.TestCase):
             'info': {'version': '0.10.0'}
         }
         mock_get_dbt_plugins_info.return_value = [
-            ('dbt-postgres', '0.10.0'),
-            ('dbt-redshift', '0.10.0'),
-            ('dbt-bigquery', '0.10.0'),
-            ('dbt-snowflake', '0.10.0')
+            ('postgres', '0.10.0'),
+            ('redshift', '0.10.0'),
+            ('bigquery', '0.10.0'),
+            ('snowflake', '0.10.0')
         ]
 
         latest_version = dbt.version.get_latest_version()
@@ -26,14 +27,13 @@ class VersionTest(unittest.TestCase):
         version_information = dbt.version.get_version_information()
 
         expected_version_information = "installed version: 0.10.0\n" \
-            "   latest version: 0.10.0\n\n" \
-            "Up to date!\n\n" \
-            "Plugins:\n" \
-            "  - dbt-postgres: 0.10.0\n" \
-            "  - dbt-redshift: 0.10.0\n" \
-            "  - dbt-bigquery: 0.10.0\n" \
-            "  - dbt-snowflake: 0.10.0\n"
-
+                                       "   latest version: 0.10.0\n\n" \
+                                       f"{green('Up to date!')}\n\n" \
+                                       "Plugins:\n" \
+                                       f"  - postgres: 0.10.0 - {green('compatible')}\n" \
+                                       f"  - redshift: 0.10.0 - {green('compatible')}\n" \
+                                       f"  - bigquery: 0.10.0 - {green('compatible')}\n" \
+                                       f"  - snowflake: 0.10.0 - {green('compatible')}\n"
         self.assertEqual(latest_version, installed_version)
         self.assertEqual(latest_version, installed_version)
         self.assertMultiLineEqual(version_information,
@@ -47,23 +47,23 @@ class VersionTest(unittest.TestCase):
             'info': {'version': '0.10.1'}
         }
         mock_get_dbt_plugins_info.return_value = [
-            ('dbt-postgres', '0.10.0'),
-            ('dbt-redshift', '0.10.0'),
-            ('dbt-bigquery', '0.10.0'),
-            ('dbt-snowflake', '0.10.0')
+            ('postgres', '0.10.0'),
+            ('redshift', '0.10.0'),
+            ('bigquery', '0.10.0'),
+            ('snowflake', '0.10.0')
         ]
         latest_version = dbt.version.get_latest_version()
         installed_version = dbt.version.get_installed_version()
         version_information = dbt.version.get_version_information()
 
         expected_version_information = "installed version: 0.10.2-a1\n" \
-            "   latest version: 0.10.1\n\n" \
-            "Your version of dbt is ahead of the latest release!\n\n" \
-            "Plugins:\n" \
-            "  - dbt-postgres: 0.10.0\n" \
-            "  - dbt-redshift: 0.10.0\n" \
-            "  - dbt-bigquery: 0.10.0\n" \
-            "  - dbt-snowflake: 0.10.0\n"
+                                       "   latest version: 0.10.1\n\n" \
+                                       "Your version of dbt is ahead of the latest release!\n\n" \
+                                       "Plugins:\n" \
+                                       f"  - postgres: 0.10.0 - {green('compatible')}\n" \
+                                       f"  - redshift: 0.10.0 - {green('compatible')}\n" \
+                                       f"  - bigquery: 0.10.0 - {green('compatible')}\n" \
+                                       f"  - snowflake: 0.10.0 - {green('compatible')}\n"
 
         assert installed_version > latest_version
         self.assertMultiLineEqual(version_information,
@@ -73,31 +73,63 @@ class VersionTest(unittest.TestCase):
     @patch('dbt.version._get_dbt_plugins_info', autospec=True)
     @patch('dbt.version.requests.get')
     def test_installed_version_lower(self, mock_get, mock_get_dbt_plugins_info):
+
         mock_get.return_value.json.return_value = {
             'info': {'version': '0.10.0'}
         }
         mock_get_dbt_plugins_info.return_value = [
-            ('dbt-postgres', '0.10.0'),
-            ('dbt-redshift', '0.10.0'),
-            ('dbt-bigquery', '0.10.0'),
-            ('dbt-snowflake', '0.10.0')
+            ('postgres', '0.10.0'),
+            ('redshift', '0.10.0'),
+            ('bigquery', '0.10.0'),
+            ('snowflake', '0.10.0')
         ]
         latest_version = dbt.version.get_latest_version()
         installed_version = dbt.version.get_installed_version()
         version_information = dbt.version.get_version_information()
 
         expected_version_information = "installed version: 0.9.5\n" \
-            "   latest version: 0.10.0\n\n" \
-            "Your version of dbt is out of date! " \
-            "You can find instructions for upgrading here:\n" \
-            "https://docs.getdbt.com/docs/installation\n\n" \
-            "Plugins:\n" \
-            "  - dbt-postgres: 0.10.0\n" \
-            "  - dbt-redshift: 0.10.0\n" \
-            "  - dbt-bigquery: 0.10.0\n" \
-            "  - dbt-snowflake: 0.10.0\n"
-
+                                       "   latest version: 0.10.0\n\n" \
+                                       "Your version of dbt is out of date! " \
+                                       "You can find instructions for upgrading here:\n" \
+                                       "https://docs.getdbt.com/docs/installation\n\n" \
+                                       "Plugins:\n" \
+                                       f"  - postgres: 0.10.0 - {green('compatible')}\n" \
+                                       f"  - redshift: 0.10.0 - {green('compatible')}\n" \
+                                       f"  - bigquery: 0.10.0 - {green('compatible')}\n" \
+                                       f"  - snowflake: 0.10.0 - {green('compatible')}\n"
         assert installed_version < latest_version
+        self.assertMultiLineEqual(version_information,
+                                  expected_version_information)
+
+    @patch("dbt.version.__version__", "1.0.1")
+    @patch('dbt.version._get_dbt_plugins_info', autospec=True)
+    @patch('dbt.version.requests.get')
+    def test_installed_version_major(self, mock_get, mock_get_dbt_plugins_info):
+        mock_get.return_value.json.return_value = {
+            'info': {'version': '1.0.1'}
+        }
+        mock_get_dbt_plugins_info.return_value = [
+            ('postgres', '1.0.0'),
+            ('redshift', '0.10.0'),
+            ('bigquery', '0.10.0'),
+            ('snowflake', '0.10.0')
+        ]
+        version_information = dbt.version.get_version_information()
+        expected_version_information = "installed version: 1.0.1\n" \
+                                       "   latest version: 1.0.1\n\n" \
+                                       f"{green('Up to date!')}\n\n" \
+                                       "Plugins:\n" \
+                                       f"  - postgres: 1.0.0 - {green('compatible')}\n" \
+                                       f"  - redshift: 0.10.0 - {red('requires update!')}\n" \
+                                       "  To update dbt-redshift please run:\n" \
+                                       "    pip install dbt-redshift --upgrade\n\n" \
+                                       f"  - bigquery: 0.10.0 - {red('requires update!')}\n" \
+                                       "  To update dbt-bigquery please run:\n" \
+                                       "    pip install dbt-bigquery --upgrade\n\n" \
+                                       f"  - snowflake: 0.10.0 - {red('requires update!')}\n" \
+                                       "  To update dbt-snowflake please run:\n" \
+                                       "    pip install dbt-snowflake --upgrade\n\n"
+
         self.assertMultiLineEqual(version_information,
                                   expected_version_information)
 
@@ -125,6 +157,7 @@ class VersionTest(unittest.TestCase):
                 path.replace('*', 'postgres'),
                 path.replace('*', 'snowflake'),
             ]
+
         mock_glob.side_effect = glob_side_effect
         self.assertEqual(
             list(dbt.version._get_adapter_plugin_names()),
@@ -148,6 +181,7 @@ class VersionTest(unittest.TestCase):
                 return [path.replace('*', 'postgres')]
             elif 'snowflake' in path:
                 return [path.replace('*', 'snowflake')]
+
         mock_glob.side_effect = glob_side_effect
         self.assertEqual(
             list(dbt.version._get_adapter_plugin_names()),
@@ -159,7 +193,7 @@ class VersionTest(unittest.TestCase):
     @patch('dbt.version._get_adapter_plugin_names', autospec=True)
     @patch('importlib.import_module', autospec=True)
     def test_get_dbt_plugins_info_with_version_info(
-        self, mock_mod, mock_get_plugin_names
+            self, mock_mod, mock_get_plugin_names
     ):
         mock_get_plugin_names.return_value = ['postgres', 'snowflake']
         mod_version = unittest.mock.Mock()
