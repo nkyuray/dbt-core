@@ -10,7 +10,7 @@ import requests
 import dbt.exceptions
 import dbt.semver
 
-from dbt.ui import green, red
+from dbt.ui import green, red, yellow
 from dbt import flags
 
 PYPI_VERSION_URL = 'https://pypi.org/pypi/dbt-core/json'
@@ -48,14 +48,18 @@ def get_version_information():
 
     plugin_version_msg = "Plugins:\n"
     for plugin_name, version in _get_dbt_plugins_info():
-        version_major = dbt.semver.VersionSpecifier.from_version_string(version).major
+        plugin_version = dbt.semver.VersionSpecifier.from_version_string(version)
         plugin_update_msg = ''
-        if installed.major == version_major:
-            compatibility_msg = green('compatible')
+        if installed == plugin_version:
+            compatibility_msg = green('Up to date!')
         else:
-            compatibility_msg = red('requires update!')
-            plugin_update_msg = ("  To update dbt-{} please run:\n"
-                                 "    pip install dbt-{} --upgrade\n\n".format(plugin_name, plugin_name))
+            if installed.major == plugin_version.major:
+                compatibility_msg = yellow('Update available!')
+            else:
+                compatibility_msg = red('Out of date!')
+            plugin_update_msg = ("  Your version of dbt-{} is out of date! "
+                                 "You can find instructions for upgrading here:\n"
+                                 "  https://docs.getdbt.com/dbt-cli/install/overview\n\n").format(plugin_name)
 
         plugin_version_msg += ("  - {}: {} - {}\n"
                                "{}").format(plugin_name, version, compatibility_msg, plugin_update_msg)
