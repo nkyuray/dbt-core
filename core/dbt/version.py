@@ -50,7 +50,7 @@ def get_version_information():
     for plugin_name, version in _get_dbt_plugins_info():
         plugin_version = dbt.semver.VersionSpecifier.from_version_string(version)
         plugin_update_msg = ''
-        if installed == plugin_version:
+        if installed.major == plugin_version.major and installed.minor == plugin_version.minor:
             compatibility_msg = green('Up to date!')
         else:
             if installed.major == plugin_version.major:
