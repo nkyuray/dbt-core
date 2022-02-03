@@ -6,6 +6,12 @@
 ### Under the hood
 - Testing cleanup ([#4496](https://github.com/dbt-labs/dbt-core/pull/4496), [#4509](https://github.com/dbt-labs/dbt-core/pull/4509))
 
+## dbt-core 1.0.2 (TBD)
+### Fixes
+- adapter compability messaging added([#4438](https://github.com/dbt-labs/dbt-core/pull/4438) [#4565](https://github.com/dbt-labs/dbt-core/pull/4565))
+
+Contributors:
+* [@nkyuray](https://github.com/nkyuray) ([#4565](https://github.com/dbt-labs/dbt-core/pull/4565))
 ## dbt-core 1.0.1 (January 03, 2022)
 
 ## dbt-core 1.0.1rc1 (December 20, 2021)

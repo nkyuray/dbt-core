@@ -16,9 +16,9 @@ from dbt import flags
 PYPI_VERSION_URL = 'https://pypi.org/pypi/dbt-core/json'
 
 
-def get_latest_version():
+def get_latest_version(version_url: str = PYPI_VERSION_URL):
     try:
-        resp = requests.get(PYPI_VERSION_URL)
+        resp = requests.get(version_url)
         data = resp.json()
         version_string = data['info']['version']
     except (json.JSONDecodeError, KeyError, requests.RequestException):
@@ -29,6 +29,10 @@ def get_latest_version():
 
 def get_installed_version():
     return dbt.semver.VersionSpecifier.from_version_string(__version__)
+
+
+def get_package_pypi_url(package_name: str) -> str:
+    return f'https://pypi.org/pypi/dbt-{package_name}/json'
 
 
 def get_version_information():
@@ -49,20 +53,30 @@ def get_version_information():
     plugin_version_msg = "Plugins:\n"
     for plugin_name, version in _get_dbt_plugins_info():
         plugin_version = dbt.semver.VersionSpecifier.from_version_string(version)
+        latest_plugin_version = get_latest_version(version_url=get_package_pypi_url(plugin_name))
         plugin_update_msg = ''
-        if installed.major == plugin_version.major and installed.minor == plugin_version.minor:
+        if installed == plugin_version or (
+            latest_plugin_version and plugin_version == latest_plugin_version
+        ):
             compatibility_msg = green('Up to date!')
         else:
-            if installed.major == plugin_version.major:
-                compatibility_msg = yellow('Update available!')
+            if latest_plugin_version:
+                if installed.major == plugin_version.major:
+                    compatibility_msg = yellow('Update available!')
+                else:
+                    compatibility_msg = red('Out of date!')
+                plugin_update_msg = (
+                    "  Your version of dbt-{} is out of date! "
+                    "You can find instructions for upgrading here:\n"
+                    "  https://docs.getdbt.com/dbt-cli/install/overview\n\n"
+                ).format(plugin_name)
             else:
-                compatibility_msg = red('Out of date!')
-            plugin_update_msg = ("  Your version of dbt-{} is out of date! "
-                                 "You can find instructions for upgrading here:\n"
-                                 "  https://docs.getdbt.com/dbt-cli/install/overview\n\n").format(plugin_name)
+                compatibility_msg = yellow('No PYPI version available')
 
-        plugin_version_msg += ("  - {}: {} - {}\n"
-                               "{}").format(plugin_name, version, compatibility_msg, plugin_update_msg)
+        plugin_version_msg += (
+            "  - {}: {} - {}\n"
+            "{}"
+        ).format(plugin_name, version, compatibility_msg, plugin_update_msg)
 
     if latest is None:
         return ("{}The latest version of dbt could not be determined!\n"

@@ -6,6 +6,14 @@ import dbt.version
 from dbt.ui import green, red, yellow
 
 
+class MockResponse(object):
+
+    def __init__(self, content: dict) -> None:
+        self.content = content
+
+    def json(self) -> dict:
+        return self.content
+
 class VersionTest(unittest.TestCase):
 
     @patch("dbt.version.__version__", "0.10.0")
@@ -13,7 +21,7 @@ class VersionTest(unittest.TestCase):
     @patch('dbt.version.requests.get')
     def test_versions_equal(self, mock_get, mock_get_dbt_plugins_info):
         mock_get.return_value.json.return_value = {
-            'info': {'version': '0.10.0'}
+            'info': {'version': '0.10.0'},
         }
         mock_get_dbt_plugins_info.return_value = [
             ('postgres', '0.10.0'),
@@ -104,15 +112,24 @@ class VersionTest(unittest.TestCase):
     @patch("dbt.version.__version__", "1.0.1")
     @patch('dbt.version._get_dbt_plugins_info', autospec=True)
     @patch('dbt.version.requests.get')
-    def test_installed_version_major(self, mock_get, mock_get_dbt_plugins_info):
-        mock_get.return_value.json.return_value = {
-            'info': {'version': '1.0.1'}
-        }
+    def test_installed_version_major_minor_pypi(self, mock_get, mock_get_dbt_plugins_info):
+        mock_get.side_effect = [
+            MockResponse({'info': {'version': '1.0.1'}}), # version for dbt-core
+            MockResponse({'info': {'version': '1.0.1'}}), # version for dbt-postgres
+            MockResponse({'info': {'version': '1.0.1'}}), # version for dbt-redshift
+            MockResponse({'info': {'version': '1.0.0'}}), # version for dbt-bigquery
+            MockResponse({'info': {'version': '1.0.1'}}), # version for dbt-snowflake
+            KeyError('no PYPI Version'),                  # no PYPI registry for newdb1
+            KeyError('no PYPI Version')                   # no PYPI registry for newdb2
+        ]
+
         mock_get_dbt_plugins_info.return_value = [
             ('postgres', '1.0.1'),
             ('redshift', '1.0.0'),
-            ('bigquery', '0.10.0'),
-            ('snowflake', '0.10.0')
+            ('bigquery', '1.0.0'),
+            ('snowflake', '0.10.0'),
+            ('newdb1', '1.0.1'),
+            ('newdb2', '0.5.1'),
         ]
         version_information = dbt.version.get_version_information()
         expected_version_information = "installed version: 1.0.1\n" \
@@ -124,14 +141,14 @@ class VersionTest(unittest.TestCase):
                                        "  Your version of dbt-redshift is out of date! You can find instructions for " \
                                        "upgrading here:\n" \
                                        "  https://docs.getdbt.com/dbt-cli/install/overview\n\n" \
-                                       f"  - bigquery: 0.10.0 - {red('Out of date!')}\n" \
-                                       "  Your version of dbt-bigquery is out of date! You can find instructions for " \
-                                       "upgrading here:\n" \
-                                       "  https://docs.getdbt.com/dbt-cli/install/overview\n\n" \
+                                       f"  - bigquery: 1.0.0 - {green('Up to date!')}\n" \
                                        f"  - snowflake: 0.10.0 - {red('Out of date!')}\n" \
                                        "  Your version of dbt-snowflake is out of date! You can find instructions for " \
                                        "upgrading here:\n" \
-                                       "  https://docs.getdbt.com/dbt-cli/install/overview\n\n"
+                                       "  https://docs.getdbt.com/dbt-cli/install/overview\n\n"\
+                                       f"  - newdb1: 1.0.1 - {green('Up to date!')}\n" \
+                                       f"  - newdb2: 0.5.1 - {yellow('No PYPI version available')}\n"
+
         self.assertMultiLineEqual(version_information,
                                   expected_version_information)
 
